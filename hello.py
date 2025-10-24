@@ -77,6 +77,15 @@ def send_email(to, subject, template, **kwargs):
     thr.start()
     return thr
 
+class Email(db.Model):
+    __tablename__ = 'emails'
+    id = db.Column(db.Integer, primary_key=True)
+    remetente = db.Column(db.String(320), index=True)
+    destinatario = db.Column(db.String(320), index=True)
+    assunto = db.Column(db.String(70), index=True)
+    corpo = db.Column(db.String(320), index=True)
+    data = db.Column(db.String(21), index=True)
+
 def send_simple_message(to, subject, newUser):
     print('Enviando mensagem (POST)...', flush=True)
     print('URL: ' + str(app.config['API_URL']), flush=True)
@@ -84,15 +93,18 @@ def send_simple_message(to, subject, newUser):
     print('from: ' + str(app.config['API_FROM']), flush=True)
     print('to: ' + str(to), flush=True)
     print('subject: ' + str(app.config['FLASKY_MAIL_SUBJECT_PREFIX']) + ' ' + subject, flush=True)
-    print('text: ' + "Novo usuário cadastrado: " + newUser, flush=True)
+    print('text: ' + "Prontuário: PT3033317\nNome: Isabela Genuino de Oliveira\nNovo usuário cadastrado: " + newUser, flush=True)
 
     resposta = requests.post(app.config['API_URL'], 
                              auth=("api", app.config['API_KEY']), data={"from": app.config['API_FROM'], 
                                                                         "to": to, 
                                                                         "subject": app.config['FLASKY_MAIL_SUBJECT_PREFIX'] + ' ' + subject, 
-                                                                        "text": "Novo usuário cadastrado: " + newUser})
+                                                                        "text": "Prontuário: PT3033317\nNome: Isabela Genuino de Oliveira\nNovo usuário cadastrado: " + newUser})
         
     print('Enviando mensagem (Resposta)...' + str(resposta) + ' - ' + datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), flush=True)
+    email = Email(remetente = newUser, destinatario = str(to), assunto = str(app.config['FLASKY_MAIL_SUBJECT_PREFIX']) + ' ' + subject, corpo = "Prontuário: PT303304X\nNome: Giovanna Karolline Menezes Ribeiro\nNovo usuário cadastrado: " + newUser, data = datetime.now().strftime("%m/%d/%Y, %H:%M:%S"))
+    db.session.add(email)
+    db.session.commit()
     return resposta
 
 
@@ -137,7 +149,7 @@ def index():
             print('from: ' + str(app.config['API_FROM']), flush=True)
             print('to: ' + str([app.config['FLASKY_ADMIN'], "flaskaulasweb@zohomail.com"]), flush=True)
             print('subject: ' + str(app.config['FLASKY_MAIL_SUBJECT_PREFIX']), flush=True)
-            print('text: ' + "Novo usuário cadastrado: " + form.name.data, flush=True)
+            print('text: ' + "Prontuário: PT3033317\nNome: Isabela Genuino de Oliveira\n Novo usuário cadastrado: " + form.name.data, flush=True)
             print('Confirmação do e-mail: ' + "Enviar e-mail para flaskaulasweb@zohomail.com? " + str(form.email.data), flush=True)
 
             if app.config['FLASKY_ADMIN']:
